@@ -9,11 +9,13 @@ client = pymongo.MongoClient(mongo_uri)
 
 class User:
     name = ""
+    user_id = 0
     lobby_id = None
     is_host = False
     def __init__(self,name):
         self.name = name
-    
+        self.user_id = abs(hash(self.name+str(datetime.datetime.microsecond)))
+        
     def create_lobby(self)->str:
         if not self.lobby_id is None: return self.lobby_id
 
@@ -22,10 +24,11 @@ class User:
         collection = db["open_lobbies"]
 
         # Insert a document
-        self.lobby_id = str(abs(hash(datetime.datetime.now())))[:6]
+        self.lobby_id = str(abs(hash(self.name.capitalize()+str(datetime.datetime.now()))))[:6]
         lobby_info ={
             "lobby_id":self.lobby_id,
-            "users":[self.name]
+            "users":[{"user_id":self.user_id,
+                      "name":self.name}]
         }
         collection.insert_one(lobby_info)
         self.is_host = True
@@ -38,12 +41,13 @@ class User:
         retrieved_lobby = collection.find_one({"lobby_id":lobby_id})
         if retrieved_lobby is None: return False
         collection.update_one({"lobby_id":lobby_id},
-                              {"$addToSet":{"users":self.name}})
+                              {"$addToSet":{"users":{"user_id":self.user_id,
+                                                    "name":self.name}}})
         self.lobby_id = lobby_id
         return True
 
     def leave_lobby(self):
-        if not self.lobby_id is None: return False
+        if self.lobby_id is None: return False
         db = client["mydatabase"]
         collection = db["open_lobbies"]
         retrieved_lobby = collection.find_one({"lobby_id":self.lobby_id})
@@ -55,11 +59,39 @@ class User:
             self.is_host = False
         self.lobby_id = None
         return True
+    
+    def start_lobby(self):
+        if not self.is_host: 
+            print("Not Host")
+            return False
+        if self.lobby_id is None:
+            print("no id")
+            return False
+        db = client["mydatabase"]
+        open_l = db["open_lobbies"]
+        retrieved_lobby = open_l.find_one({"lobby_id":self.lobby_id})
+        if retrieved_lobby is None: 
+            print("No valid lobby")
+            return False
+        active_l = db["active_lobbies"]
+        i = 0
+        for user in retrieved_lobby["users"]:
+            
+            user_info = {"lobby_id":self.lobby_id,
+                         "user_id":user["user_id"],
+                         "name":user["name"],
+                         "likes":[]}
+            active_l.insert_one(user_info)
+        open_l.delete_one({"lobby_id":self.lobby_id})
+
+
+
 
 host = User("Cool guy")
 id = host.create_lobby()
 user = User("Other guy")
 user.join_lobby(id)
+host.start_lobby()
 # db = client["mydatabase"]
 # collection = db["active_lobbies"]
 
