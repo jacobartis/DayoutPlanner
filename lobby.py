@@ -34,7 +34,7 @@ class User:
         collection = db["open_lobbies"]
 
         # Insert a document
-        self.lobby_id = str(abs(hash(self.name.capitalize()+str(datetime.datetime.now()))))[:6]
+        self.lobby_id = int(str(abs(hash(self.name.capitalize()+str(datetime.datetime.now()))))[:6])
         lobby_info ={
             "lobby_id":self.lobby_id,
             "users":[{"user_id":self.user_id,
@@ -59,7 +59,7 @@ class User:
     def leave_lobby(self):
         if not self.is_in_lobby(): return False
         db = client["mydatabase"]
-        collection = db["open_lobbies"]#
+        collection = db["open_lobbies"]
         collection.update_one({"lobby_id":self.lobby_id},
                               {"$pull":{"users":self.name}})
         if self.is_host:
@@ -95,17 +95,23 @@ class User:
                             {"$addToSet":{"likes":place_id}})
         return True
 
-    def check_match(self):
-        if not self.is_in_lobby(): return False
+
+
+class LobbyUtils:
+
+    def get_matches(lobby_id:int):
+        if not lobby_id: return []
         db = client["mydatabase"]
         active_l = db["active_lobbies"]
-        players = active_l.find({"lobby_id":self.lobby_id})
-        if players is None: return False
+        players = active_l.find({"lobby_id":lobby_id})
+        if players is None: return []
         common = players[0]["likes"]
         for player in players:
             common = [c for c in common if c in player["likes"]]
-        return len(common)>0
-            
+        return common
+    
+    
+
 
 
 host = User("Cool guy")
@@ -114,7 +120,12 @@ user = User("Other guy")
 user.join_lobby(id)
 host.start_lobby()
 user.add_like(4402590845)
-user.check_match()
+#print(LobbyUtils.get_match(id))
 host.add_like(4402590845)
-host.check_match()
+#print(LobbyUtils.get_match(id))
 
+
+host = User("Cool guy")
+id = host.create_lobby()
+user = User("Other guy")
+user.join_lobby(id)
