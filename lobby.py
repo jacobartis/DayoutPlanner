@@ -103,12 +103,40 @@ class LobbyUtils:
         if not lobby_id: return []
         db = client["mydatabase"]
         active_l = db["active_lobbies"]
-        players = active_l.find({"lobby_id":lobby_id})
-        if players is None: return []
-        common = players[0]["likes"]
-        for player in players:
-            common = [c for c in common if c in player["likes"]]
+        users = active_l.find({"lobby_id":lobby_id})
+        if users is None: return []
+        common = users[0]["likes"]
+        for user in users:
+            common = [c for c in common if c in user["likes"]]
         return common
+    
+    def save_result(lobby_id:int):
+        if not lobby_id: return False
+        matches = LobbyUtils.get_matches(lobby_id)
+        if len(matches)==0: return False
+        db = client["mydatabase"]
+        results = db["lobby_results"]
+        lobby_res = results.find_one({"lobby_id":lobby_id})
+        if lobby_res is None:
+            results.insert_one({"lobby_id":lobby_id,
+                                "results":[matches[0]]})
+            print("New")
+        else:
+            results.update_one({"lobby_id":lobby_id},
+                               {"$push":{"results":matches[0]}})
+            print("Old")
+        return True
+        
+
+    def new_round(lobby_id:int):
+        if not lobby_id: return False
+        db = client["mydatabase"]
+        active_l = db["active_lobbies"]
+        users = active_l.find({"lobby_id":lobby_id})
+        if users is None: return False
+        for user in users:
+            active_l.update_one({"user_id":user["user_id"]},
+                                {"$set":{"likes":[]}})
     
     
 
@@ -120,12 +148,10 @@ user = User("Other guy")
 user.join_lobby(id)
 host.start_lobby()
 user.add_like(4402590845)
-#print(LobbyUtils.get_match(id))
+print(LobbyUtils.get_matches(id))
 host.add_like(4402590845)
-#print(LobbyUtils.get_match(id))
-
-
-host = User("Cool guy")
-id = host.create_lobby()
-user = User("Other guy")
-user.join_lobby(id)
+print(LobbyUtils.get_matches(id))
+print(LobbyUtils.save_result(id))
+print(LobbyUtils.save_result(id))
+print(LobbyUtils.save_result(id))
+LobbyUtils.new_round(id)
