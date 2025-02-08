@@ -3,7 +3,10 @@ import streamlit as st
 from requests.structures import CaseInsensitiveDict
 
 # Define API key
-API_KEY = "#####"  # Replace with your actual API key
+try:
+    API_KEY = open("keys.txt").read()
+except:
+    print("keys.txt not found")
 
 # Define category options
 CATEGORIES = {
