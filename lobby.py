@@ -15,9 +15,17 @@ class User:
     def __init__(self,name):
         self.name = name
         self.user_id = abs(hash(self.name+str(datetime.datetime.microsecond)))
-        
+
+    def is_in_lobby(self):
+        if self.lobby_id is None: return False
+        db = client["mydatabase"]
+        collection = db["open_lobbies"]
+        retrieved_lobby = collection.find_one({"lobby_id":self.lobby_id})
+        if retrieved_lobby is None: return False
+        return True
+
     def create_lobby(self)->str:
-        if not self.lobby_id is None: return self.lobby_id
+        if self.is_in_lobby(): return self.lobby_id
 
         # Access a database and collection
         db = client["mydatabase"]
@@ -35,7 +43,7 @@ class User:
         return self.lobby_id
 
     def join_lobby(self,lobby_id:str):
-        if not self.lobby_id is None: return False
+        if self.is_in_lobby(): return False
         db = client["mydatabase"]
         collection = db["open_lobbies"]
         retrieved_lobby = collection.find_one({"lobby_id":lobby_id})
@@ -47,11 +55,9 @@ class User:
         return True
 
     def leave_lobby(self):
-        if self.lobby_id is None: return False
+        if not self.is_in_lobby(): return False
         db = client["mydatabase"]
-        collection = db["open_lobbies"]
-        retrieved_lobby = collection.find_one({"lobby_id":self.lobby_id})
-        if retrieved_lobby is None: return False
+        collection = db["open_lobbies"]#
         collection.update_one({"lobby_id":self.lobby_id},
                               {"$pull":{"users":self.name}})
         if self.is_host:
@@ -64,19 +70,12 @@ class User:
         if not self.is_host: 
             print("Not Host")
             return False
-        if self.lobby_id is None:
-            print("no id")
-            return False
+        if not self.is_in_lobby(): return False
         db = client["mydatabase"]
         open_l = db["open_lobbies"]
         retrieved_lobby = open_l.find_one({"lobby_id":self.lobby_id})
-        if retrieved_lobby is None: 
-            print("No valid lobby")
-            return False
         active_l = db["active_lobbies"]
-        i = 0
         for user in retrieved_lobby["users"]:
-            
             user_info = {"lobby_id":self.lobby_id,
                          "user_id":user["user_id"],
                          "name":user["name"],
@@ -87,23 +86,10 @@ class User:
 
 
 
+
 host = User("Cool guy")
 id = host.create_lobby()
 user = User("Other guy")
 user.join_lobby(id)
 host.start_lobby()
-# db = client["mydatabase"]
-# collection = db["active_lobbies"]
 
-# # Insert a document
-# id = str(abs(hash(datetime.datetime.now())))[:6]
-# lobby_info ={
-#     "lobby_id":id, 
-#     "user":{"id":1,"name":"Testname"},
-#     "likes":[]
-# }
-# collection.insert_one(lobby_info)
-
-# # Fetch a document
-# #retrieved_user = collection.find_one({"name": "Alice"})
-# #print(retrieved_user)
