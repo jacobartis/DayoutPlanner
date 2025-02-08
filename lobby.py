@@ -19,9 +19,11 @@ class User:
     def is_in_lobby(self):
         if self.lobby_id is None: return False
         db = client["mydatabase"]
-        collection = db["open_lobbies"]
-        retrieved_lobby = collection.find_one({"lobby_id":self.lobby_id})
-        if retrieved_lobby is None: return False
+        open_l = db["open_lobbies"]
+        retrieved_open = open_l.find_one({"lobby_id":self.lobby_id})
+        active_l = db["active_lobbies"]
+        retrieved_active = active_l.find_one({"lobby_id":self.lobby_id})
+        if retrieved_open is None and retrieved_active is None: return False
         return True
 
     def create_lobby(self)->str:
@@ -83,8 +85,27 @@ class User:
             active_l.insert_one(user_info)
         open_l.delete_one({"lobby_id":self.lobby_id})
 
+    def add_like(self,place_id):
+        if not self.is_in_lobby(): return False
+        db = client["mydatabase"]
+        active_l = db["active_lobbies"]
+        retrieved_player = active_l.find_one({"user_id":self.user_id})
+        if retrieved_player is None: return False
+        active_l.update_one({"user_id":self.user_id},
+                            {"$addToSet":{"likes":place_id}})
+        return True
 
-
+    def check_match(self):
+        if not self.is_in_lobby(): return False
+        db = client["mydatabase"]
+        active_l = db["active_lobbies"]
+        players = active_l.find({"lobby_id":self.lobby_id})
+        if players is None: return False
+        common = players[0]["likes"]
+        for player in players:
+            common = [c for c in common if c in player["likes"]]
+        return len(common)>0
+            
 
 
 host = User("Cool guy")
@@ -92,4 +113,8 @@ id = host.create_lobby()
 user = User("Other guy")
 user.join_lobby(id)
 host.start_lobby()
+user.add_like(4402590845)
+user.check_match()
+host.add_like(4402590845)
+host.check_match()
 
