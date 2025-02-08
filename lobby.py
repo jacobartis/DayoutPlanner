@@ -1,8 +1,10 @@
 import pymongo
 import datetime
 
+mongo_data = open("mongo_data.txt").read()
+print(mongo_data)
 # Replace with your MongoDB Atlas connection string
-mongo_uri = "mongodb+srv://dayoutplanner:nopassword@cluster0.wd4xi.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+mongo_uri = "mongodb+srv://{mongo_data}@cluster0.wd4xi.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
 # Connect to MongoDB Atlas
 client = pymongo.MongoClient(mongo_uri)
