@@ -3,7 +3,7 @@ import requests
 from collections import defaultdict
 
 # Define API key
-GOOGLE_API_KEY = "AIzaSyCTgsl9Gj7U-FpFvwCd0DwvOOeakgReMtI"
+GOOGLE_API_KEY = "####"
 
 # Initialize session state
 if 'page' not in st.session_state:
