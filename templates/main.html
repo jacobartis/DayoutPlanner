@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day Out Planner</title>
+    <link rel="stylesheet" href="templates/main.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🌟 Day Out Planner 🌟</h1>
+        
+        <input type="text" id="name" placeholder="Enter your name">
+        <input type="text" id="lobby-id" placeholder="Enter Lobby ID">
+        
+        <div class="button-group">
+            <button onclick="hostLobby()">Host</button>
+            <button onclick="joinLobby()">Join</button>
+        </div>
+
+        <p id="response-message"></p>
+    </div>
+
+    <script>
+        async function sendRequest(url, data) {
+            const response = await fetch(url, data);
+            const result = await response.json();
+            return result.message;
+        }
+
+        async function hostLobby() {
+            const name = document.getElementById("name").value;
+            
+            if (name) {
+                // Prepare form data to send
+                const formData = new FormData();
+                formData.append("host_name", name);
+
+                // Send the form data to the backend via fetch
+                const requestData = {
+                    method: "GET",
+                    body: formData,  // FormData is sent here
+                };
+                
+                // Send the request
+                resp = sendRequest("/create", requestData);
+                if (resp.redirected) {
+                    alert("IT SHOULD WORK!!!");
+                    window.location.href = response.url;  // Redirect to the new lobby page
+                } else {
+                    const result = await response.json();
+                    document.getElementById("response-message").innerText = result.detail || "Error creating lobby.";
+                }
+            } else {
+                alert("Please enter your name.");
+            }
+        }
+
+        function joinLobby() {
+            const name = document.getElementById("name").value;
+            const lobbyId = document.getElementById("lobby-id").value;
+            if (name && lobbyId) {
+                sendRequest("/join", { name, lobby_id: lobbyId });
+            } else {
+                alert("Please enter your name and lobby ID.");
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lobby - Day Out Planner</title>
+    <link rel="stylesheet" href="templates/lobby.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Lobby ID: {{ lobby_id }}</h1>
+
+        <div class="lobby-details">
+            <p>Welcome to your lobby! Click the button below to start the game.</p>
+            <button onclick="startGame()">Start Game</button>
+        </div>
+
+        <a href="/" class="back-link">Back to Home</a>
+    </div>
+
+    <script>
+        function startGame() {
+            // For now, let's just show an alert
+            alert("Game Started!");
+
+            // In a real app, you could redirect to a game page or start the game logic.
+        }
+    </script>
+</body>
+</html>
