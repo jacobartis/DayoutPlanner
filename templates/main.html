@@ -22,11 +22,6 @@
     </div>
 
     <script>
-        async function sendRequest(url, data) {
-            const response = await fetch(url, data);
-            const result = await response.json();
-            return result.message;
-        }
 
         async function hostLobby() {
             const name = document.getElementById("name").value;
@@ -38,19 +33,12 @@
 
                 // Send the form data to the backend via fetch
                 const requestData = {
-                    method: "GET",
+                    method: "POST",
                     body: formData,  // FormData is sent here
                 };
+                const resp = await fetch("/create", requestData);
                 
-                // Send the request
-                resp = sendRequest("/create", requestData);
-                if (resp.redirected) {
-                    alert("IT SHOULD WORK!!!");
-                    window.location.href = response.url;  // Redirect to the new lobby page
-                } else {
-                    const result = await response.json();
-                    document.getElementById("response-message").innerText = result.detail || "Error creating lobby.";
-                }
+                window.location.href = resp.url;
             } else {
                 alert("Please enter your name.");
             }
@@ -60,7 +48,7 @@
             const name = document.getElementById("name").value;
             const lobbyId = document.getElementById("lobby-id").value;
             if (name && lobbyId) {
-                sendRequest("/join", { name, lobby_id: lobbyId });
+                sendRequest(lobbyId+"/join", { name, lobby_id: lobbyId });
             } else {
                 alert("Please enter your name and lobby ID.");
             }

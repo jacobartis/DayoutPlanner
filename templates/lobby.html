@@ -19,11 +19,19 @@
     </div>
 
     <script>
-        function startGame() {
-            // For now, let's just show an alert
-            alert("Game Started!");
+        async function startGame() {            
 
-            // In a real app, you could redirect to a game page or start the game logic.
+            var lobby_id = window.location.href.slice(-6);
+            const formData = new FormData();
+            formData.append("lobby_id", lobby_id);
+            // Send the form data to the backend via fetch
+            const requestData = {
+                method: "POST",
+                body: formData,  // FormData is sent here
+            };
+            const resp = await fetch("/lobbies/"+lobby_id+"/start", requestData);
+            
+            window.location.href = resp.url;
         }
     </script>
 </body>

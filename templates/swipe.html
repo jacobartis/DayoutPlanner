@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Match Lobby</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            text-align: center;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .image-container img {
+            max-width: 80%;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        .buttons-container {
+            margin-top: 20px;
+        }
+
+        .buttons-container button {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .accept-button {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .reject-button {
+            background-color: #f44336;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="image-container">
+        <!-- Replace with the URL of the image you want -->
+        <img src="https://via.placeholder.com/300x200.png?text=Some+Information" alt="Information Image">
+    </div>
+    
+    <div class="buttons-container">
+        <button class="accept-button" onclick="acceptInfo()">Accept</button>
+        <button class="reject-button" onclick="rejectInfo()">Reject</button>
+    </div>
+</div>
+
+<script>
+    async function acceptInfo() {
+        const requestData = {
+                method: "POST",
+            };
+        await fetch("/lobbies/"+lobby_id+"/match/accept", requestData);
+    }
+
+    async function rejectInfo() {
+        const requestData = {
+                method: "POST",
+            };
+        await fetch("/lobbies/"+lobby_id+"/match/reject", requestData);
+    }
+</script>
+
+</body>
+</html>

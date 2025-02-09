@@ -67,23 +67,6 @@ class User:
             self.is_host = False
         self.lobby_id = None
         return True
-    
-    def start_lobby(self):
-        if not self.is_host: 
-            print("Not Host")
-            return False
-        if not self.is_in_lobby(): return False
-        db = client["mydatabase"]
-        open_l = db["open_lobbies"]
-        retrieved_lobby = open_l.find_one({"lobby_id":self.lobby_id})
-        active_l = db["active_lobbies"]
-        for user in retrieved_lobby["users"]:
-            user_info = {"lobby_id":self.lobby_id,
-                         "user_id":user["user_id"],
-                         "name":user["name"],
-                         "likes":[]}
-            active_l.insert_one(user_info)
-        open_l.delete_one({"lobby_id":self.lobby_id})
 
     def add_like(self,place_id):
         if not self.is_in_lobby(): return False
@@ -138,15 +121,27 @@ class LobbyUtils:
             active_l.update_one({"user_id":user["user_id"]},
                                 {"$set":{"likes":[]}})
     
-    
+    def start_lobby(lobby_id:int):
+        db = client["mydatabase"]
+        open_l = db["open_lobbies"]
+        retrieved_lobby = open_l.find_one({"lobby_id":lobby_id})
+        active_l = db["active_lobbies"]
+        if retrieved_lobby is None: return False
+        for user in retrieved_lobby["users"]:
+            user_info = {"lobby_id":lobby_id,
+                         "user_id":user["user_id"],
+                         "name":user["name"],
+                         "likes":[]}
+            active_l.insert_one(user_info)
+        open_l.delete_one({"lobby_id":lobby_id})
 
 
 
 # host = User("Cool guy")
 # id = host.create_lobby()
-# user = User("Other guy")
+# user = User("Other guy")  
 # user.join_lobby(id)
-# host.start_lobby()
+# LobbyUtils.start_lobby(id) 
 # user.add_like(4402590845)
 # print(LobbyUtils.get_matches(id))
 # host.add_like(4402590845)
@@ -154,4 +149,14 @@ class LobbyUtils:
 # print(LobbyUtils.save_result(id))
 # print(LobbyUtils.save_result(id))
 # print(LobbyUtils.save_result(id))
-# LobbyUtils.new_round(id)
+
+# host = User("Cool gsfdgsuy")
+# id = host.create_lobby()
+# user = User("Other fdsgguy")  
+# user.join_lobby(id)
+
+# host = User("Cool gusey")
+# id = host.create_lobby()
+# user = User("Other gfdsgdguy")  
+# LobbyUtils.join_lobby(id)
+# host.start_lobby()
